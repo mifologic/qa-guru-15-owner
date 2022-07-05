@@ -15,14 +15,17 @@ import static com.codeborne.selenide.Selenide.closeWebDriver;
 public class TestBase {
 
     static CredentialsConfig config = ConfigFactory.create(CredentialsConfig.class);
+    static Boolean remote = Boolean.valueOf(System.getProperty("remote"));
+
 
     @BeforeEach
     void setUp() {
 
         Configuration.baseUrl = config.baseUrl();
         Configuration.browserSize = config.browserSize();
-        Configuration.remote = config.selenoidURL();
-
+        if (remote) {
+            Configuration.remote = config.selenoidURL();
+        }
         DesiredCapabilities capabilities = new DesiredCapabilities();
         capabilities.setCapability("browserName", config.browserName());
         capabilities.setCapability("browserVersion", config.browserVersion());
