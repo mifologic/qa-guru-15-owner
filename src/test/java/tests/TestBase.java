@@ -14,26 +14,29 @@ import static com.codeborne.selenide.Selenide.closeWebDriver;
 
 public class TestBase {
 
-    static CredentialsConfig config = ConfigFactory.create(CredentialsConfig.class);
-    static Boolean remote = Boolean.valueOf(System.getProperty("remote"));
-
+    CredentialsConfig config;
+    final String launchType = System.getProperty("type");
 
     @BeforeEach
     void setUp() {
 
+        if (launchType.equals("web")) {
+            System.setProperty("launch", "web");
+            config = ConfigFactory.create(CredentialsConfig.class);
+            Configuration.remote = config.selenoidURL();
+            DesiredCapabilities capabilities = new DesiredCapabilities();
+            capabilities.setCapability("browserName", config.browserName());
+            capabilities.setCapability("browserVersion", config.browserVersion());
+            capabilities.setCapability("selenoid:options", Map.<String, Object>of(
+                    "enableVNC", true,
+                    "enableVideo", true
+            ));
+            Configuration.browserCapabilities = capabilities;
+        }
+        System.setProperty("launch", "local");
+        config = ConfigFactory.create(CredentialsConfig.class);
         Configuration.baseUrl = config.baseUrl();
         Configuration.browserSize = config.browserSize();
-        if (remote) {
-            Configuration.remote = config.selenoidURL();
-        }
-        DesiredCapabilities capabilities = new DesiredCapabilities();
-        capabilities.setCapability("browserName", config.browserName());
-        capabilities.setCapability("browserVersion", config.browserVersion());
-        capabilities.setCapability("selenoid:options", Map.<String, Object>of(
-                "enableVNC", true,
-                "enableVideo", true
-        ));
-        Configuration.browserCapabilities = capabilities;
     }
 
     @AfterEach
